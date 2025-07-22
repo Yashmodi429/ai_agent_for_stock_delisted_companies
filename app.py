@@ -47,7 +47,7 @@ body {
 }
 </style>
 """, unsafe_allow_html=True)
-""", unsafe_allow_html=True)
+
 
 # --- Header ---
 st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_allow_html=True)
