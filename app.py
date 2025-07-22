@@ -98,8 +98,8 @@ Respond with a clean table like:
 
 | Company Name         | Event Type | Date       | Industry     | Reason                           |
 |----------------------|------------|------------|--------------|----------------------------------|
-| Hexaware Tech        | Acquired   | 2023-08-10 | IT Services  | Acquired by Carlyle for privatization |
-| Allcargo Logistics   | Delisted   | 2024-03-01 | Transport    | Voluntary delisting by promoter buyout |
+| Hexaware Tech        | Acquired   | 2023-8-10 | IT Services  | Acquired by Carlyle for privatization |
+| Allcargo Logistics   | Delisted   | 2024-3-1 | Transport    | Voluntary delisting by promoter buyout |
 
 End with: "Would you like to know more about any of these?"
 
