@@ -103,7 +103,7 @@ Respond with a clean table like:
 
 End with: *"Would you like to know more about any of these?"*
 
-🔹 **B. Specific Company Query**
+**B. Specific Company Query**
 Example:
 - "What happened to Hexaware Technologies?"
 
