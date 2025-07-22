@@ -4,9 +4,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 
-# --- Set up API Key ---
- Set Gemini API key from Streamlit secrets
+# --- Set Gemini API key from Streamlit secrets ---
 os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
+
 # --- Page config ---
 st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 
@@ -54,7 +54,6 @@ Be friendly, conversational, and informative.
 If the user follows up, give in-depth insights.
 """
 
-
 # --- Gemini LLM Setup ---
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-001",
@@ -67,25 +66,23 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-# --- Chat history using session_state ---
+# --- Chat History Using Session State ---
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# --- Display history ---
+# --- Display Chat History ---
 for msg in st.session_state.history:
     if isinstance(msg, HumanMessage):
         st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
     elif isinstance(msg, AIMessage):
         st.markdown(f"<div class='ai-message'>🤖 {msg.content}</div>", unsafe_allow_html=True)
 
-# --- Chat Input ---
+# --- Chat Input Box ---
 user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
 if user_input:
     st.session_state.history.append(HumanMessage(content=user_input))
-    with st.spinner("Analyzing company data..."):
+    with st.spinner("🔍 Analyzing company data..."):
         chain = prompt | llm
         response = chain.invoke({"input": user_input})
         st.session_state.history.append(AIMessage(content=response.content))
         st.rerun()
-
-
