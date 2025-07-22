@@ -54,6 +54,7 @@ st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_
 st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
 
 # --- System Prompt ---
+# --- System Prompt ---
 SYS_PROMPT = """
 You are a Company Insights Assistant focused strictly on **public companies listed on Indian stock exchanges (NSE/BSE)**.
 
