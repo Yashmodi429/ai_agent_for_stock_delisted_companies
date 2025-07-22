@@ -1,78 +1,30 @@
 import os
 import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.memory import StreamlitChatMessageHistory
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import AIMessage, HumanMessage
 
-# ---------- Set API key from Streamlit Secrets ----------
-GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
-os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+# --- Set up API Key ---
+os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
-# ---------- Page Config ----------
-st.set_page_config(page_title="AI Company Insights Assistant 🤖", page_icon="📊", layout="wide")
+# --- Page config ---
+st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 
-# ---------- Custom CSS ----------
+# --- Custom CSS ---
 st.markdown("""
-    <style>
-        body {
-            background-color: white;
-            font-family: 'Arial', sans-serif;
-            color: #333;
-        }
-        .header-title {
-            font-size: 40px;
-            text-align: center;
-            color: #1B2A4E;
-            margin-top: 30px;
-            font-weight: bold;
-        }
-        .header-subtitle {
-            font-size: 18px;
-            text-align: center;
-            color: #607D8B;
-            margin-top: 10px;
-        }
-        .footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #1B2A4E;
-            color: white;
-            font-size: 16px;
-            position: fixed;
-            width: 100%;
-            bottom: 0;
-            font-weight: bold;
-        }
-        .user-message {
-            background-color: #D6F0FF;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 16px;
-            color: #0D1B2A;
-        }
-        .ai-message {
-            background-color: #EDEDED;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 16px;
-            color: #333;
-        }
-    </style>
+<style>
+.header { text-align:center; font-size: 36px; color: #2c3e50; margin-top: 20px; font-weight:bold; }
+.subheader { text-align:center; font-size: 16px; color: #7f8c8d; margin-bottom: 30px; }
+.user-message { background-color: #ecf0f1; padding: 10px; border-radius: 10px; margin: 10px 0; }
+.ai-message { background-color: #dff9fb; padding: 10px; border-radius: 10px; margin: 10px 0; }
+</style>
 """, unsafe_allow_html=True)
 
-# ---------- Header ----------
-st.markdown('<div class="header-title">📊 AI Company Insights Chatbot</div>', unsafe_allow_html=True)
-st.markdown('<div class="header-subtitle">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
+# --- Header ---
+st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_allow_html=True)
+st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
 
-# ---------- Gemini Model Setup ----------
-gemini = ChatGoogleGenerativeAI(
-    model='gemini-2.0-flash-001',
-    temperature=0.1,
-    convert_system_message_to_human=True
-)
-
-# ---------- System Prompt ----------
+# --- System Prompt ---
 SYS_PROMPT = """
 You are a company insights assistant that helps users identify and summarize companies that have been fully acquired, sold, delisted, merged, or shut down in the last 1 year.
 
@@ -102,43 +54,38 @@ Be friendly, conversational, and informative.
 If the user follows up, give in-depth insights.
 """
 
-# ---------- Prompt Template ----------
+
+# --- Gemini LLM Setup ---
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash-001",
+    temperature=0.2,
+    convert_system_message_to_human=True
+)
+
 prompt = ChatPromptTemplate.from_messages([
     ("system", SYS_PROMPT),
-    MessagesPlaceholder(variable_name="history"),
     ("human", "{input}")
 ])
 
-llm_chain = prompt | gemini
-streamlit_msg_history = StreamlitChatMessageHistory()
+# --- Chat history using session_state ---
+if "history" not in st.session_state:
+    st.session_state.history = []
 
-conversation_chain = RunnableWithMessageHistory(
-    llm_chain,
-    lambda session_id: streamlit_msg_history,
-    input_messages_key="input",
-    history_messages_key="history",
-)
+# --- Display history ---
+for msg in st.session_state.history:
+    if isinstance(msg, HumanMessage):
+        st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
+    elif isinstance(msg, AIMessage):
+        st.markdown(f"<div class='ai-message'>🤖 {msg.content}</div>", unsafe_allow_html=True)
 
-# ---------- Display Chat History ----------
-for msg in streamlit_msg_history.messages:
-    with st.chat_message(msg.type):
-        if msg.type == "human":
-            st.markdown(f'<div class="user-message">{msg.content}</div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="ai-message">{msg.content}</div>', unsafe_allow_html=True)
+# --- Chat Input ---
+user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
+if user_input:
+    st.session_state.history.append(HumanMessage(content=user_input))
+    with st.spinner("Analyzing company data..."):
+        chain = prompt | llm
+        response = chain.invoke({"input": user_input})
+        st.session_state.history.append(AIMessage(content=response.content))
+        st.rerun()
 
-# ---------- Chat Input ----------
-user_prompt = st.chat_input("Ask about acquisitions, delistings, or any company insights...")
-if user_prompt:
-    st.chat_message("human").markdown(user_prompt)
-    with st.chat_message("ai"):
-        try:
-            config = {"configurable": {"session_id": "any"}}
-            response = conversation_chain.invoke({"input": user_prompt}, config)
-            content = response.content if hasattr(response, "content") else str(response)
-            st.markdown(f'<div class="ai-message">{content}</div>', unsafe_allow_html=True)
-        except Exception as e:
-            st.error(f"⚠️ Something went wrong: {e}")
 
-# ---------- Footer ----------
-st.markdown('<div class="footer">Developed by Yash Samir Modi | Vallum Capital Internship Project</div>', unsafe_allow_html=True)
