@@ -1,8 +1,3 @@
-Here is a complete and polished README.md file for your AI Company Insights Chatbot built for Vallum Capital using Gemini API and Streamlit.
-
-⸻
-
-✅ README.md
 
 # 📊 AI Company Insights Chatbot
 
