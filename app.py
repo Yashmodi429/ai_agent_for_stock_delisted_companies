@@ -25,7 +25,7 @@ st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_
 st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
 
 # --- System Prompt ---
-SYS_PROMPT = '''
+SYS_PROMPT = """
 You are a Company Insights Assistant focused strictly on **public companies listed on Indian stock exchanges (NSE/BSE)**.
 
 🎯 Your Core Responsibilities:
@@ -103,7 +103,7 @@ Example:
 - Friendly, reliable, investor-grade clarity
 - Use bullet points, bold headers, and short paragraphs
 - Suggest follow-ups if user asks: “Tell me more” or “Give deeper insights”
-'''
+"""
 
 # --- Gemini LLM Setup ---
 llm = ChatGoogleGenerativeAI(
