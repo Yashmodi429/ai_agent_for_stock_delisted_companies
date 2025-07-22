@@ -132,7 +132,6 @@ Example:
 - Use bullet points, bold headers, and short paragraphs
 - Suggest follow-ups if user asks: “Tell me more” or “Give deeper insights”
 """
-
 # --- Gemini LLM Setup ---
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-001",
