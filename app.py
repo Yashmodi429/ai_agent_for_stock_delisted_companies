@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 
 # --- Set up API Key ---
-os.environ["GOOGLE_API_KEY"] = st.secrets["AIzaSyBbhyAenGf_JB8uCnO1JTiDqTJFpfGSCpc"]
+os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
 # --- Page config ---
 st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
