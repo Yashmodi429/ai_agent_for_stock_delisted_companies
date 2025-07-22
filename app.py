@@ -13,11 +13,39 @@ st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 # --- Custom CSS ---
 st.markdown("""
 <style>
-.header { text-align:center; font-size: 36px; color: #2c3e50; margin-top: 20px; font-weight:bold; }
-.subheader { text-align:center; font-size: 16px; color: #7f8c8d; margin-bottom: 30px; }
-.user-message { background-color: #ecf0f1; padding: 10px; border-radius: 10px; margin: 10px 0; }
-.ai-message { background-color: #dff9fb; padding: 10px; border-radius: 10px; margin: 10px 0; }
+body {
+    background-color: white;
+    color: black;
+}
+.header {
+    text-align: center;
+    font-size: 36px;
+    color: #2c3e50;
+    margin-top: 20px;
+    font-weight: bold;
+}
+.subheader {
+    text-align: center;
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
+}
+.user-message {
+    background-color: #f0f0f0;  /* light grey for both modes */
+    color: #000;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+.ai-message {
+    background-color: #e6f4ff;  /* light blue */
+    color: #000;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
 </style>
+""", unsafe_allow_html=True)
 """, unsafe_allow_html=True)
 
 # --- Header ---
