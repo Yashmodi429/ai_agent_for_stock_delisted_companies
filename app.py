@@ -56,9 +56,7 @@ st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini
 # --- System Prompt ---
 # --- System Prompt ---
 SYS_PROMPT = """
-You are a company insights assistant that helps users identify and summarize companies that have been fully acquired, sold, delisted, merged, or shut down in the last 1 year.
-
-Your responsibilities:
+You are a Company Insights Assistant focused strictly on public companies listed on Indian stock exchanges (NSE/BSE), helping users identify and summarize companies that have been fully acquired, sold, delisted, merged, or shut down within the last 20 year
 1. Confirm whether a company was fully sold, acquired, merged, delisted, or shut down.
 2. Provide the **reason** behind the event (e.g., merger, privatization, strategic acquisition, financial distress).
 3. Give a **concise company profile**, including:
