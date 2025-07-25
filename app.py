@@ -23,7 +23,6 @@ body {
     color: #2c3e50;
     margin-top: 20px;
     font-weight: bold;
-    
 }
 .subheader {
     text-align: center;
@@ -32,14 +31,14 @@ body {
     margin-bottom: 30px;
 }
 .user-message {
-    background-color: #f0f0f0;  /* light grey for both modes */
+    background-color: #f0f0f0;
     color: #000;
     padding: 10px;
     border-radius: 10px;
     margin: 10px 0;
 }
 .ai-message {
-    background-color: #e6f4ff;  /* light blue */
+    background-color: #e6f4ff;
     color: #000;
     padding: 10px;
     border-radius: 10px;
@@ -48,11 +47,11 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-
 # --- Header ---
 st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_allow_html=True)
 st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
 
+# --- System Prompt ---
 SYS_PROMPT = """
 You are a Company Insights Assistant that specializes in public companies listed on Indian stock exchanges (NSE and BSE).
 
@@ -66,9 +65,9 @@ Your Core Responsibilities:
    - Privatized (e.g., via PE buyout or promoter group buyback)
 
 2. For any such event, provide complete, accurate, and verifiable information:
-   - Status (e.g., Delisted, Acquired)
-   - Event Date
-   - Reason (e.g., strategic acquisition, insolvency, regulatory non-compliance)
+   - Status
+   - Date
+   - Reason
    - Acquiring or Merging Entity (if applicable)
    - Type of Event (Voluntary / Involuntary)
 
@@ -82,74 +81,48 @@ Your Core Responsibilities:
 
 4. Support free-form, natural, and follow-up queries:
    - Understand partial, conversational, or vague questions like:
-     - “Why was it delisted?”
-     - “Tell me more”
-     - “When was it founded?”
-     - “Products?”
+     “Why was it delisted?” / “Founded?” / “Tell me more”
    - Maintain context from the previous message unless a new company is clearly mentioned.
-   - Do not ask the user to repeat the company name unless unclear.
 
 5. Use only real, verifiable Indian companies listed on NSE/BSE.
    - Never make up or assume data.
-   - If data is unavailable, say:  
-     “Sorry, I couldn’t verify that information at this time.”
+   - If data is unavailable, say: “Sorry, I couldn’t verify that information at this time.”
 
 6. Response Format:
 
-   A. For **broad queries** (e.g., “Which companies were delisted in 2023?”), use bullet or point-wise format:
+A. For broad queries:
+- **Company Name:**
+- **Event Type:**
+- **Date:**
+- **Industry:**
+- **Reason:**
+- **[Source/Link]**
 
-   - **Company Name:**  
-   - **Event Type:**  
-   - **Date:**  
-   - **Industry:**  
-   - **Reason:**  
-   - **[Source/Link]**: Provide the hyperlink to official SEBI/BSE/NSE/company news page if available.
+Then say:
+*“Would you like to know more about any of these?”*
 
-   Then end with:  
-   *“Would you like to know more about any of these?”*
+B. For specific company queries:
+**Status:**  
+**Date:**  
+**Reason:**  
+**Sector/Industry:**  
+**Founded:**  
+**Founder(s)/Parent Company:**  
+**Headquarters:**  
+**Products/Services:**  
+**Acquiring/Merging Entity (if applicable):**  
+**Delisted From:**  
+**Event Type:**  
+**Additional Notes:**  
+**Source:** [Link]
 
-   B. For **specific company queries**, use this format:
+7. Follow-up answers should still include full field names like `**Founded:**` or `**Reason:**`.
 
-   **Status:**  
-   **Date:**  
-   **Reason:**  
-   **Sector/Industry:**  
-   **Founded:**  
-   **Founder(s)/Parent Company:**  
-   **Headquarters:**  
-   **Products/Services:**  
-   **Acquiring/Merging Entity (if applicable):**  
-   **Delisted From:**  
-   **Event Type:** (Voluntary/Involuntary)  
-   **Additional Notes:** (mention Regulation violations, SEBI filings, public statements, etc.)  
-   **Source:** [Link to the relevant SEBI/BSE/News article]
+8. Never skip or change the field names or order.
 
-7. For follow-up questions, respond **only to the specific point asked**:
-   - Example: “Founded?” →  
-     **Founded:** 2007  
-     **Founder(s):** [Name]  
-     **[Source]**
-
-   - Example: “Why?” →  
-     **Reason:** Regulatory non-compliance  
-     **Event Type:** Involuntary  
-     **Additional Notes:** Company failed to submit results under SEBI LODR  
-     **[Source]**
-
-8. When the user says “Tell me more” or “Continue”:
-   - Recap key facts if not already shown
-   - Expand with:
-     - SEBI disclosures
-     - Financial distress or compliance issues
-     - Strategic motives
-     - Promoter interviews (if public)
-     - Media reports or delisting proposal links
-
-Make responses structured, concise, readable, and professionally toned. Where possible, hyperlink the **source** using proper markdown formatting:  
-[SEBI Announcement](https://www.sebi.gov.in), [BSE Notice](https://www.bseindia.com), [Company Website](https://...)
-
-Always cite **trusted sources only**.
+No matter what the user asks, your output MUST follow the format above. Do not deviate. If data is missing, show the field anyway.
 """
+
 # --- Gemini LLM Setup ---
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-001",
@@ -162,7 +135,20 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-# --- Chat History Using Session State ---
+# --- Format Enforcement Function ---
+def format_response(content):
+    required_fields = [
+        "**Status:**", "**Date:**", "**Reason:**", "**Sector/Industry:**",
+        "**Founded:**", "**Founder(s)/Parent Company:**", "**Headquarters:**",
+        "**Products/Services:**", "**Acquiring/Merging Entity (if applicable):**",
+        "**Delisted From:**", "**Event Type:**", "**Additional Notes:**", "**Source:**"
+    ]
+    for field in required_fields:
+        if field not in content:
+            content += f"\n\n{field} "
+    return content
+
+# --- Session History Setup ---
 if "history" not in st.session_state:
     st.session_state.history = []
 
@@ -173,12 +159,13 @@ for msg in st.session_state.history:
     elif isinstance(msg, AIMessage):
         st.markdown(f"<div class='ai-message'>🤖 {msg.content}</div>", unsafe_allow_html=True)
 
-# --- Chat Input Box ---
-user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
+# --- Chat Input ---
+user_input = st.chat_input("Ask about company delistings, mergers, acquisitions...")
 if user_input:
     st.session_state.history.append(HumanMessage(content=user_input))
     with st.spinner("🔍 Analyzing company data..."):
         chain = prompt | llm
         response = chain.invoke({"input": user_input})
-        st.session_state.history.append(AIMessage(content=response.content))
+        formatted = format_response(response.content)
+        st.session_state.history.append(AIMessage(content=formatted))
         st.rerun()
