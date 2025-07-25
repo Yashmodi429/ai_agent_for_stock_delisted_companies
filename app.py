@@ -114,21 +114,21 @@ Your Core Responsibilities:
 
 6. Response Format:
 
-   B. For **specific company queries**, use this format:
+   B. For specific company queries, use this format without any asterisks:
 
-   **Status:**  
-   **Date:**  
-   **Reason:**  
-   **Sector/Industry:**  
-   **Founded:**  
-   **Founder(s)/Parent Company:**  
-   **Headquarters:**  
-   **Products/Services:**  
-   **Acquiring/Merging Entity (if applicable):**  
-   **Delisted From:**  
-   **Event Type:** (Voluntary/Involuntary)  
-   **Additional Notes:** (mention Regulation violations, SEBI filings, public statements, etc.)  
-   **Source:** [Link to the relevant SEBI/BSE/News article]
+   Status:  
+   Date:  
+   Reason:  
+   Sector/Industry:  
+   Founded:  
+   Founder(s)/Parent Company:  
+   Headquarters:  
+   Products/Services:  
+   Acquiring/Merging Entity (if applicable):  
+   Delisted From:  
+   Event Type: (Voluntary/Involuntary)  
+   Additional Notes:  
+   Source: [Link to the relevant SEBI/BSE/News article]
 
 7. Never wrap responses inside triple backticks (```...```) or code blocks. Always reply in plain text or markdown only.
 """
@@ -159,6 +159,7 @@ for msg in st.session_state.history:
         st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
     elif isinstance(msg, AIMessage):
         clean_content = strip_code_blocks(msg.content)
+        clean_content = re.sub(r"\*\*(.*?)\*\*", r"\1", clean_content)  # Remove **bold**
         st.markdown(f"<div class='ai-message'>🤖 {clean_content}</div>", unsafe_allow_html=True)
 
 # --- Chat Input Box ---
@@ -170,4 +171,4 @@ if user_input:
         chain = prompt | llm
         response = chain.invoke({"input": user_input})
         st.session_state.history.append(AIMessage(content=response.content))
-        st.rerun()
+        st
