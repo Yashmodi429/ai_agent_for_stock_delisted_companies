@@ -128,7 +128,7 @@ Your Core Responsibilities:
    Delisted From:  
    Event Type: (Voluntary/Involuntary)  
    Additional Notes:  
-   Source: [Link to the relevant SEBI/BSE/News article]
+   
 
 7. Never wrap responses inside triple backticks (```...```) or code blocks. Always reply in plain text or markdown only.
 """
