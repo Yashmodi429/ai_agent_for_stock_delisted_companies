@@ -1,13 +1,14 @@
 import os
+import re
 import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 
-# --- Set Gemini API key from Streamlit secrets ---
+# --- Set Gemini API Key ---
 os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
-# --- Page config ---
+# --- Page Setup ---
 st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 
 # --- Custom CSS ---
@@ -95,18 +96,6 @@ Your Core Responsibilities:
 
 6. Response Format:
 
-   A. For **broad queries** (e.g., “Which companies were delisted in 2023?”), use bullet or point-wise format:
-
-   - **Company Name:**  
-   - **Event Type:**  
-   - **Date:**  
-   - **Industry:**  
-   - **Reason:**  
-   - **[Source/Link]**: Provide the hyperlink to official SEBI/BSE/NSE/company news page if available.
-
-   Then end with:  
-   *“Would you like to know more about any of these?”*
-
    B. For **specific company queries**, use this format:
 
    **Status:**  
@@ -123,33 +112,7 @@ Your Core Responsibilities:
    **Additional Notes:** (mention Regulation violations, SEBI filings, public statements, etc.)  
    **Source:** [Link to the relevant SEBI/BSE/News article]
 
-7. For follow-up questions, respond **only to the specific point asked**:
-   - Example: “Founded?” →  
-     **Founded:** 2007  
-     **Founder(s):** [Name]  
-     **[Source]**
-
-   - Example: “Why?” →  
-     **Reason:** Regulatory non-compliance  
-     **Event Type:** Involuntary  
-     **Additional Notes:** Company failed to submit results under SEBI LODR  
-     **[Source]**
-
-8. When the user says “Tell me more” or “Continue”:
-   - Recap key facts if not already shown
-   - Expand with:
-     - SEBI disclosures
-     - Financial distress or compliance issues
-     - Strategic motives
-     - Promoter interviews (if public)
-     - Media reports or delisting proposal links
-
-Make responses structured, concise, readable, and professionally toned. Where possible, hyperlink the **source** using proper markdown formatting:  
-[SEBI Announcement](https://www.sebi.gov.in), [BSE Notice](https://www.bseindia.com), [Company Website](https://...)
-
-Always cite **trusted sources only**.
-
-Never wrap your responses in triple backticks (```), code blocks, or HTML tags.
+7. Never wrap responses inside triple backticks (```...```) or code blocks. Always reply in plain text or markdown only.
 """
 
 # --- Gemini LLM Setup ---
@@ -164,7 +127,11 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-# --- Chat History Using Session State ---
+# --- Helper: Strip code blocks (```...```) ---
+def strip_code_blocks(text):
+    return re.sub(r"```.*?```", "", text, flags=re.DOTALL).strip()
+
+# --- Session State for History ---
 if "history" not in st.session_state:
     st.session_state.history = []
 
@@ -173,11 +140,12 @@ for msg in st.session_state.history:
     if isinstance(msg, HumanMessage):
         st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
     elif isinstance(msg, AIMessage):
-        clean_content = msg.content.replace("```", "").strip()
+        clean_content = strip_code_blocks(msg.content)
         st.markdown(f"<div class='ai-message'>🤖 {clean_content}</div>", unsafe_allow_html=True)
 
 # --- Chat Input Box ---
 user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
+
 if user_input:
     st.session_state.history.append(HumanMessage(content=user_input))
     with st.spinner("🔍 Analyzing company data..."):
