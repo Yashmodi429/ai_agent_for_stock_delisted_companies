@@ -23,7 +23,6 @@ body {
     color: #2c3e50;
     margin-top: 20px;
     font-weight: bold;
-    
 }
 .subheader {
     text-align: center;
@@ -32,14 +31,14 @@ body {
     margin-bottom: 30px;
 }
 .user-message {
-    background-color: #f0f0f0;  /* light grey for both modes */
+    background-color: #f0f0f0;
     color: #000;
     padding: 10px;
     border-radius: 10px;
     margin: 10px 0;
 }
 .ai-message {
-    background-color: #e6f4ff;  /* light blue */
+    background-color: #e6f4ff;
     color: #000;
     padding: 10px;
     border-radius: 10px;
@@ -48,11 +47,11 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-
 # --- Header ---
 st.markdown('<div class="header">📊 Company Insights Assistant</div>', unsafe_allow_html=True)
 st.markdown('<div class="subheader">Built for Vallum Capital | Powered by Gemini</div>', unsafe_allow_html=True)
 
+# --- System Prompt ---
 SYS_PROMPT = """
 You are a Company Insights Assistant that specializes in public companies listed on Indian stock exchanges (NSE and BSE).
 
@@ -149,7 +148,10 @@ Make responses structured, concise, readable, and professionally toned. Where po
 [SEBI Announcement](https://www.sebi.gov.in), [BSE Notice](https://www.bseindia.com), [Company Website](https://...)
 
 Always cite **trusted sources only**.
+
+Never wrap your responses in triple backticks (```), code blocks, or HTML tags.
 """
+
 # --- Gemini LLM Setup ---
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-001",
@@ -171,7 +173,8 @@ for msg in st.session_state.history:
     if isinstance(msg, HumanMessage):
         st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
     elif isinstance(msg, AIMessage):
-        st.markdown(f"<div class='ai-message'>🤖 {msg.content}</div>", unsafe_allow_html=True)
+        clean_content = msg.content.replace("```", "").strip()
+        st.markdown(f"<div class='ai-message'>🤖 {clean_content}</div>", unsafe_allow_html=True)
 
 # --- Chat Input Box ---
 user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
