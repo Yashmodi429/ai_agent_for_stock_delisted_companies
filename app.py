@@ -1,67 +1,49 @@
 import os
-import re
 import streamlit as st
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage, HumanMessage
 
-# --- Set Gemini API Key ---
+# --- Set Gemini API key from Streamlit secrets ---
 os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 
-# --- Page Setup ---
+# --- Page config ---
 st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 
-# --- Custom CSS for Beautiful Output ---
+# --- Custom CSS ---
 st.markdown("""
 <style>
 body {
-    background-color: #fefefe;
-    color: #222;
-    font-family: 'Segoe UI', sans-serif;
+    background-color: white;
+    color: black;
 }
 .header {
     text-align: center;
-    font-size: 38px;
-    color: #0e2f44;
+    font-size: 36px;
+    color: #2c3e50;
     margin-top: 20px;
-    font-weight: 900;
+    font-weight: bold;
 }
 .subheader {
     text-align: center;
-    font-size: 18px;
-    color: #5f6a7d;
-    margin-bottom: 35px;
-    font-weight: 500;
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 30px;
 }
 .user-message {
-    background: linear-gradient(135deg, #e8eaf6, #c5cae9);
-    color: #1a237e;
-    padding: 12px 16px;
-    border-radius: 15px;
-    margin: 14px 0;
-    font-size: 15.5px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    background-color: #f0f0f0;
+    color: #000;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
 }
 .ai-message {
-    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-    color: #004d40;
-    padding: 14px 18px;
-    border-left: 5px solid #00acc1;
-    border-radius: 15px;
-    margin: 14px 0;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 1.7;
+    background-color: #e6f4ff;
+    color: #000;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px 0;
     white-space: pre-wrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-a {
-    color: #00695c;
-    font-weight: bold;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -114,7 +96,19 @@ Your Core Responsibilities:
 
 6. Response Format:
 
-   B. For specific company queries, use this format without any asterisks:
+   A. For broad queries (e.g., “Which companies were delisted in 2023?”), use bullet or point-wise format:
+
+   - Company Name:  
+   - Event Type:  
+   - Date:  
+   - Industry:  
+   - Reason:  
+   - Source/Link: Provide a markdown hyperlink to SEBI/BSE/NSE/company source.
+
+   Then end with:  
+   “Would you like to know more about any of these?”
+
+   B. For specific company queries, use this format:
 
    Status:  
    Date:  
@@ -128,9 +122,9 @@ Your Core Responsibilities:
    Delisted From:  
    Event Type: (Voluntary/Involuntary)  
    Additional Notes:  
-   
+   Source: [SEBI/BSE/News Link]
 
-7. Never wrap responses inside triple backticks (```...```) or code blocks. Always reply in plain text or markdown only.
+7. Never use asterisks or markdown bold formatting in answers.
 """
 
 # --- Gemini LLM Setup ---
@@ -145,30 +139,23 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}")
 ])
 
-# --- Helper: Strip code blocks (```...```) ---
-def strip_code_blocks(text):
-    return re.sub(r"```.*?```", "", text, flags=re.DOTALL).strip()
-
-# --- Session State for History ---
+# --- Chat History ---
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# --- Display Chat History ---
+# --- Display History ---
 for msg in st.session_state.history:
     if isinstance(msg, HumanMessage):
         st.markdown(f"<div class='user-message'>🧑‍💼 {msg.content}</div>", unsafe_allow_html=True)
     elif isinstance(msg, AIMessage):
-        clean_content = strip_code_blocks(msg.content)
-        clean_content = re.sub(r"\*\*(.*?)\*\*", r"\1", clean_content)  # Remove **bold**
-        st.markdown(f"<div class='ai-message'>🤖 {clean_content}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='ai-message'>🤖 {msg.content}</div>", unsafe_allow_html=True)
 
 # --- Chat Input Box ---
 user_input = st.chat_input("Ask about companies acquired, merged, or delisted recently...")
-
 if user_input:
     st.session_state.history.append(HumanMessage(content=user_input))
     with st.spinner("🔍 Analyzing company data..."):
         chain = prompt | llm
         response = chain.invoke({"input": user_input})
         st.session_state.history.append(AIMessage(content=response.content))
-        st
+        st.rerun()
