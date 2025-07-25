@@ -11,39 +11,57 @@ os.environ["GOOGLE_API_KEY"] = st.secrets["GEMINI_API_KEY"]
 # --- Page Setup ---
 st.set_page_config(page_title="📊 Company Insights Bot", page_icon="📈")
 
-# --- Custom CSS ---
+# --- Custom CSS for Beautiful Output ---
 st.markdown("""
 <style>
 body {
-    background-color: white;
-    color: black;
+    background-color: #fefefe;
+    color: #222;
+    font-family: 'Segoe UI', sans-serif;
 }
 .header {
     text-align: center;
-    font-size: 36px;
-    color: #2c3e50;
+    font-size: 38px;
+    color: #0e2f44;
     margin-top: 20px;
-    font-weight: bold;
+    font-weight: 900;
 }
 .subheader {
     text-align: center;
-    font-size: 16px;
-    color: #555;
-    margin-bottom: 30px;
+    font-size: 18px;
+    color: #5f6a7d;
+    margin-bottom: 35px;
+    font-weight: 500;
 }
 .user-message {
-    background-color: #f0f0f0;
-    color: #000;
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px 0;
+    background: linear-gradient(135deg, #e8eaf6, #c5cae9);
+    color: #1a237e;
+    padding: 12px 16px;
+    border-radius: 15px;
+    margin: 14px 0;
+    font-size: 15.5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 .ai-message {
-    background-color: #e6f4ff;
-    color: #000;
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px 0;
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    color: #004d40;
+    padding: 14px 18px;
+    border-left: 5px solid #00acc1;
+    border-radius: 15px;
+    margin: 14px 0;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+a {
+    color: #00695c;
+    font-weight: bold;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
 }
 </style>
 """, unsafe_allow_html=True)
